@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     16.08.2012 08:18:04                                                        
+
+     Libreoffice Inspect Helper    
+     A tool to ease inspection
+                   
+     casy                                                                
+     ====================================================================== -->
+<project name="libreofficeInspect" default="dist">
+    <description>
+    	A tool to ease inspection
+    </description>
+
+	<property name="src" location="src" />
+	<property name="bin" location="bin" />
+	<property name="build" location="build" />
+	<property name="dist" location="dist" />
+	<property file="build.properties" />
+	<!-- Change following property file to match your system-->
+	<property file="unix.properties" />
+	<!--            ^^^^^^^^^^^^^^^         -->
+	<property name="jdkver" value="1.6" />
+
+	<target name="init" description="create all we need for ant tasks">
+		<!-- Create the time stamp -->
+		<tstamp />
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build}" />
+		<mkdir dir="${bin}" />
+		<mkdir dir="${dist}" />
+	</target>
+	
+	<target name="clean">
+		<delete includeEmptyDirs="true" failonerror="false">
+			<fileset dir="${build}" />
+			<fileset dir="${bin}" />
+			<fileset dir="${dist}" />
+			<fileset dir="${idl}" />
+		</delete>
+	</target>
+
+	<target name="compile" depends="init" description="compile the source ">
+		<delete file="hs_err_pid*"></delete>
+		<javac srcdir="${src}" destdir="${bin}" debug="on" debuglevel="source,lines,vars" target="${jdkver}" source="${jdkver}" includeantruntime="false">
+			<classpath>
+				<fileset dir="${office.java}">
+					<include name="*.jar" />
+				</fileset>
+				<pathelement location="${office.classes}/unoil.jar" />
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="dist-src" description="generate the source distribution">
+		<zip destfile="${dist}/${jar.package}-src.zip">
+			<zipfileset dir="./" includes="src/**/*.java" />
+			<zipfileset dir="./" includes="src/*.xcu"/>
+			<zipfileset dir="./" includes="src/oxtMETA-INF/*" />
+			<zipfileset file="COPYING" />
+			<zipfileset file="README.md" />
+			<zipfileset file="build.xml" />
+			<zipfileset file="description.xml" />
+			<zipfileset file="*.properties" />
+		</zip>
+	</target>
+	
+	<target name="dist" depends="compile" description="generate the distribution">
+		<copy todir="${bin}">
+			<fileset dir="${src}" includes="**/*.png **/*.tmpl">
+			</fileset>
+		</copy>
+		<jar destfile="${build}/${jar.package}.jar">
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="RegistrationClassName" value="${registration.classname}" />
+			</manifest>
+			<fileset dir="${bin}" />
+		</jar>
+		<zip destfile="${dist}/${jar.package}.oxt">
+			<zipfileset dir="${build}" includes="${jar.package}.jar" />
+			<zipfileset dir="${src}" includes="${jar.package}.xcu" />
+			<zipfileset dir="${src}" includes="TestProtocolHandler.xcu" />
+			<zipfileset dir="${src}/oxtMETA-INF" prefix="META-INF" />
+			<zipfileset file="COPYING" />
+			<zipfileset file="README.md" />
+			<zipfileset file="description.xml" />
+		</zip>
+	</target>
+
+	
+	<target name="undeploy" depends="dist">
+		<path id="unopkg.jarpath">
+			<fileset dir="${office.addon}" includes="**/${jar.package}.oxt/${jar.package}.jar" />
+		</path>
+		<pathconvert property="unopkg.jar" refid="unopkg.jarpath" pathsep="">
+		</pathconvert>
+		<apply verbose="true" executable="unopkg" dir="${dist}" relative="true" addsourcefile="false" skipemptyfilesets="true">
+			<arg value="remove" />
+			<arg value="-v" />
+			<arg value="${jar.package}.oxt" />
+			<fileset dir="${dist}" includes="${jar.package}.oxt" />
+			<mapper type="glob" from="${jar.package}.oxt" to="${unopkg.jar}" />
+		</apply>
+	</target>
+
+	<target name="deploy" depends="undeploy">
+		<apply verbose="true" executable="unopkg" dir="${dist}" relative="true" addsourcefile="false">
+			<arg value="add" />
+			<arg value="-v" />
+			<arg value="-s" />
+			<arg value="${jar.package}.oxt" />
+			<fileset dir="${dist}" includes="${jar.package}.oxt" />
+			<mapper type="glob" from="${jar.package}.oxt" to="/${unopkg.jar}" />
+		</apply>
+	</target>
+	
+	
+</project>
