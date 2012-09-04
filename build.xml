@@ -36,7 +36,6 @@
 			<fileset dir="${build}" />
 			<fileset dir="${bin}" />
 			<fileset dir="${dist}" />
-			<fileset dir="${idl}" />
 		</delete>
 	</target>
 
