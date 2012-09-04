@@ -13,6 +13,6 @@ xmlns:xlink="http://www.w3.org/1999/xlink">
 <name>LibreInspectTool</name>
 </display-name>
 <extension-description>
-<src xlink:href="README"/>
+<src xlink:href="README.md"/>
 </extension-description>
 </description>
