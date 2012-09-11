@@ -14,7 +14,7 @@
 		</node>
 	</node>
 	<node oor:name="Events">
-		<node oor:name="OnNew" oor:op="fuse">
+		<node oor:name="OnViewCreated" oor:op="fuse">
 			<node oor:name="JobList">
 				<node oor:name="startInspect" oor:op="replace"/>
 			</node>
